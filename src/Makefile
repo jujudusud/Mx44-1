@@ -11,8 +11,8 @@ DIR		= Mx44.2
 
 CC		= gcc
 
-GTK_CFLAGS = `pkg-config --cflags gtk+-2.0` #-DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED
-GTK_LIBS   = `pkg-config --libs gtk+-2.0`
+GTK_CFLAGS = `pkg-config --cflags gtk+-3.0` #-DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED
+GTK_LIBS = `pkg-config --libs gtk+-3.0`
 
 ALSA_CFLAGS = `pkg-config --cflags alsa`
 ALSA_LIBS   = `pkg-config --libs alsa`
@@ -23,7 +23,9 @@ JACK_LIBS   = `pkg-config --libs jack`
 
 LIBS		= $(GTK_LIBS) $(ALSA_LIBS) $(JACK_LIBS) -lm 
 
-FLAGS		= -O2 -Wall -DDATADIR=\"$(DATADIR)\" $(GTK_CFLAGS) $(ALSA_CFLAGS) $(JACK_CFLAGS) $(CFLAGS) 
+FLAGS		= -O3 -Wall -pipe -mmmx -fomit-frame-pointer -D_REENTRANT \
+		   -DDATADIR=\"$(DATADIR)\" \
+		   $(GTK_CFLAGS) $(ALSA_CFLAGS) $(JACK_CFLAGS) 
 
 SRCS            =  interface2.c mx44.c stateio.c cmdline_opts.c main.c
 INCLUDE         =  mx44.h
@@ -34,7 +36,7 @@ OBJS		= $(SRCS:.c=.o)
 
 
 $(TARGET):	$(OBJS)
-	$(CC) -D_REENTRANT $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+	$(CC) -D_REENTRANT -o $@ $(OBJS) $(LIBS)
 
 .c.o: 
 	$(CC) -c $(FLAGS) $<
@@ -43,7 +45,7 @@ install: $(TARGET)
 	install $(TARGET) $(BINDIR)
 	install -d $(DATADIR)
 	install -t $(DATADIR) ../data/mx44patch
-	install -t $(DATADIR) ../data/gtk-2.0/gtkrc
+#	install -t $(DATADIR) ../data/gtk-2.0/gtkrc test passage gtk3
 
 clean:
 	rm -f $(TARGET) $(OBJS) core core.* *.bak *~
@@ -67,8 +69,8 @@ tar:
 		$(DIR)/README 		\
 		$(DIR)/src/Makefile 	\
 		$(DIR)/COPYING 		\
-		$(DIR)/data/mx44patch 	\
-		$(DIR)/data/gtk-2.0/gtkrc ;\
+		$(DIR)/data/mx44patch ;	\
+#		$(DIR)/data/gtk-2.0/gtkrc ;\  test passage à GTK3
 	gzip $(DIR).tar
 
 # DO NOT DELETE
