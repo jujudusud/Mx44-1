@@ -26,6 +26,8 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include <locale.h>
+
 #include "mx44.h"
 #include <math.h>
 // hint_t groups
@@ -43,7 +45,7 @@
 #define LFO 10
 
 #define CSZ 15 // cell size
-//static char * widget_theme = "/usr/share/themes/Ia Ora One/gtk-2.0/gtkrc";
+//static char * widget_theme = "/usr/share/themes/Ia Ora One/gtk-2.0/gtkrc"; plus valable à supprimer
 
 
 extern Mx44state *      mx44;
@@ -108,7 +110,7 @@ static GtkWidget        *patch_group_1 = 0;
 static GtkWidget        *patch_group_2 = 0;
 static GtkComboBox      *bank_entry = 0;
 static GtkComboBox      *patch_entry = 0;
-static GtkObject        *midichannel_spinner_adj = 0;
+static GObject          *midichannel_spinner_adj = 0;
 static GtkAdjustment    *spin_adj = 0;
 static GtkToggleButton  *savebutton = 0;
 
@@ -403,7 +405,7 @@ static
 void line(GtkWidget *table,int x,int y,int width,int height)
 {
   char*name;
-  GtkWidget *line = gtk_hseparator_new ();
+  GtkWidget *line = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   name = name_n();
   gtk_widget_set_name (line, name);
   g_object_ref (line);
@@ -422,7 +424,7 @@ GtkWidget *label(GtkWidget *table,int x,int y,int width,char*text)
 {
   //text= "";
   GtkWidget *label = gtk_label_new (text);
-  gtk_widget_modify_font (label,pango_font_description_from_string (label_font));
+  gtk_widget_override_font (label,pango_font_description_from_string (label_font));
   name_n();
   gtk_widget_set_name (label, text);
   g_object_ref (label);
@@ -472,7 +474,7 @@ int  on_focus( GtkRange *range, GdkEvent *event, hint_t* hint)
       else
 	gtk_label_set_text((GtkLabel*)ed.common_oplabel,op_label[hint->op]);
       gtk_spin_button_set_adjustment( (GtkSpinButton*)ed.common_spinbutton, adj);
-      gtk_spin_button_set_value ((GtkSpinButton*)ed.common_spinbutton,adj->value);
+      gtk_spin_button_set_value ((GtkSpinButton*)ed.common_spinbutton,gtk_adjustment_get_value(adj));
     }
   return 0;
 }
@@ -493,7 +495,7 @@ int  on_range( GtkRange *range, GdkEvent *event, hint_t* hint)
 static
 void on_value_changed( GtkAdjustment *adj, hint_t* hint)
 {
-  double value = adj->value;
+  double value = gtk_adjustment_get_value(adj);
   if(patch_change)
     return;
   if(spin_adj != adj)
@@ -1259,7 +1261,7 @@ GtkWidget* create_window (int has_rc)
 
     gtk_widget_set_tooltip_text (patch_group_2, "patch group 2");
 
-    bank_combo = gtk_combo_box_new_text ();
+    bank_combo = gtk_combo_box_text_new ();
     g_object_ref (bank_combo);
     g_object_set_data_full (G_OBJECT (window1), "bank_combo", bank_combo,
 			      (GDestroyNotify) g_object_unref);
@@ -1270,20 +1272,20 @@ GtkWidget* create_window (int has_rc)
 		      (GtkAttachOptions) (0), 0, 0);
     //gtk_widget_set_usize (bank_combo, 45, 25);
     //gtk_container_set_border_width (GTK_CONTAINER (bank_combo), 5);
-    GTK_WIDGET_SET_FLAGS (bank_combo, GTK_CAN_FOCUS);
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "A");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "B");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "C");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "D");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "E");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "F");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "G");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (bank_combo), "H");
+    gtk_widget_set_can_focus (bank_combo, TRUE);
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "A");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "B");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "C");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "D");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "E");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "F");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "G");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (bank_combo), "H");
     gtk_combo_box_set_active  (GTK_COMBO_BOX (bank_combo), 0);
 
     bank_entry = bank_combo;
 
-    patch_combo = gtk_combo_box_new_text ();
+    patch_combo = gtk_combo_box_text_new ();
     g_object_ref (patch_combo);
     g_object_set_data_full (G_OBJECT (window1), "patch_combo", patch_combo,
 			      (GDestroyNotify) g_object_unref);
@@ -1292,14 +1294,14 @@ GtkWidget* create_window (int has_rc)
 		      (GtkAttachOptions) (GTK_EXPAND),
 		      (GtkAttachOptions) (0), 0, 0);
 
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "1");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "2");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "3");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "4");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "5");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "6");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "7");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (patch_combo), "8");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "1");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "2");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "3");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "4");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "5");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "6");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "7");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (patch_combo), "8");
     gtk_combo_box_set_active  (GTK_COMBO_BOX (patch_combo), 0);
     
     patch_entry = patch_combo;
@@ -1383,7 +1385,7 @@ GtkWidget* create_window (int has_rc)
 
     // ----
 
-    ch_combo = gtk_combo_box_new_text ();
+    ch_combo = gtk_combo_box_text_new ();
     g_object_ref (ch_combo);
     g_object_set_data_full (G_OBJECT (window1), "ch_combo", ch_combo,
 			      (GDestroyNotify) g_object_unref);
@@ -1396,23 +1398,23 @@ GtkWidget* create_window (int has_rc)
      
     //gtk_widget_set_usize (bank_combo, 45, 25);
     //gtk_container_set_border_width (GTK_CONTAINER (ch_combo), 5);
-    GTK_WIDGET_SET_FLAGS (ch_combo, GTK_CAN_FOCUS);
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 1");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 2");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 3");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 4");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 5");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 6");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 7");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 8");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch 9");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch10");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch11");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch12");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch13");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch14");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch15");
-    gtk_combo_box_append_text (GTK_COMBO_BOX (ch_combo), "Ch16");
+    gtk_widget_set_can_focus (ch_combo, TRUE);
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 1");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 2");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 3");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 4");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 5");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 6");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 7");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 8");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch 9");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch10");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch11");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch12");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch13");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch14");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch15");
+    gtk_combo_box_text_append_text (GTK_COMBO_BOX (ch_combo), "Ch16");
     gtk_combo_box_set_active  (GTK_COMBO_BOX (ch_combo), 0);
 
 
@@ -1459,9 +1461,9 @@ GtkWidget* create_window (int has_rc)
 
 
       scale_table =  gtk_table_new (1,32, FALSE);
-      gtk_widget_ref (scale_table);
-      gtk_object_set_data_full (GTK_OBJECT (window1), "scale_table", scale_table,
-				(GtkDestroyNotify) gtk_widget_unref);
+      g_object_ref (scale_table);
+      g_object_set_data_full (G_OBJECT (window1), "scale_table", scale_table,
+				(GDestroyNotify) g_object_unref);
       gtk_widget_show (scale_table);
       gtk_container_set_border_width (GTK_CONTAINER (scale_table), 0);
       gtk_container_add (GTK_CONTAINER (widget), scale_table);
@@ -1645,18 +1647,18 @@ GtkWidget* create_window (int has_rc)
 			       -180,180,ed.op,MISC,4,"  output balance");
 
 	ed.expressionbutton[ed.op] = gtk_check_button_new();
-	gtk_widget_ref(ed.expressionbutton[ed.op]);
+	g_object_ref (ed.expressionbutton[ed.op]);
 	gtk_widget_set_tooltip_text (ed.expressionbutton[ed.op], "expression-pedal inversion");
 	gtk_widget_show(ed.expressionbutton[ed.op]);
-	gtk_object_set_data_full (GTK_OBJECT (window1), "expression", ed.expressionbutton[ed.op] ,
-				  (GtkDestroyNotify) gtk_widget_unref);
+	g_object_set_data_full (G_OBJECT (window1), "expression", ed.expressionbutton[ed.op] ,
+				    (GDestroyNotify) g_object_unref);
 	gtk_table_attach (GTK_TABLE (ed.table[ed.op]),	ed.expressionbutton[ed.op] ,13, 14, 13, 14,
 			  (GtkAttachOptions) (GTK_SHRINK),
 			  (GtkAttachOptions) (GTK_SHRINK), 0, 0);
 	gtk_widget_set_size_request (ed.expressionbutton[ed.op], CSZ, CSZ);
 	
 	g_signal_connect (ed.expressionbutton[ed.op], "clicked",
-			  GTK_SIGNAL_FUNC (on_button_clicked),
+			  G_CALLBACK (on_button_clicked),
 			  (NULL+(EXPRESSIONBUTTON<<4))+ed.op);
 	
 
@@ -1915,11 +1917,11 @@ GtkWidget* create_window (int has_rc)
 	ed.temperament[t] = gtk_radio_button_new ((void*)t_group);
 	//RG
 	t_group = (void*)
-	  gtk_radio_button_group (GTK_RADIO_BUTTON (ed.temperament[0]));
-	gtk_widget_ref (ed.temperament[t]);
-	gtk_object_set_data_full (GTK_OBJECT (window1), "temperament",
+	  gtk_radio_button_set_group (GTK_RADIO_BUTTON (ed.temperament[0]), GSList t_group);
+	g_object_ref (ed.temperament[t]);
+	g_object_set_data_full (G_OBJECT (window1), "temperament",
 				  ed.temperament[t],
-				  (GtkDestroyNotify) gtk_widget_unref);
+				  (GDestroyNotify) g_object_unref);
 	gtk_widget_set_tooltip_text (ed.temperament[t], temp_tips[t]);
 	gtk_widget_show (ed.temperament[t]);
 
@@ -1936,7 +1938,7 @@ GtkWidget* create_window (int has_rc)
 
 	gtk_widget_set_size_request (ed.temperament[t], CSZ, CSZ);
 	g_signal_connect (ed.temperament[t], "clicked",
-			  GTK_SIGNAL_FUNC (on_temperament_clicked),
+			  G_CALLBACK (on_temperament_clicked),
 			  (NULL+t));
 
 	if (t == mx44->temperament)
@@ -1965,12 +1967,10 @@ GtkWidget* create_window (int has_rc)
 	  }
 
 	ed.shruti[t] = gtk_check_button_new();
-	gtk_widget_ref(ed.shruti[t]);
-	gtk_object_set_data_full (GTK_OBJECT (window1), "", ed.shruti[t],
-				  (GtkDestroyNotify) gtk_widget_unref);
-	g_signal_connect (ed.shruti[t], "clicked",
-			  GTK_SIGNAL_FUNC (on_shruti_button_clicked),
-			  NULL+t);
+	g_object_ref (ed.shruti[t]);
+	g_object_set_data_full (G_OBJECT (window1), "", ed.shruti[t],
+				  (GDestroyNotify) (g_object_unref));
+	g_signal_connect (ed.shruti[t], "clicked", G_CALLBACK (on_shruti_button_clicked), NULL+t);
 	gtk_widget_show(ed.shruti[t]);
 
 	if(t < 6)
@@ -2012,21 +2012,21 @@ main_interface (int argc, char *argv[])
   memset(&mx44op_buf, 0, sizeof(mx44op_copypaste_buf));
 
 
-  char* rc_path = "../data/gtk-2.0/gtkrc";
   int has_rc = FALSE;
-  if(open(rc_path, O_RDONLY, 0444)>0)
-    gtk_rc_add_default_file (rc_path),has_rc = TRUE;
-  else
-    {
-      rc_path = malloc(strlen(DATADIR) +strlen("gtkrc") + 2);
-      sprintf(rc_path,"%s%s",DATADIR,"gtkrc");
-      if(open(rc_path, O_RDONLY, 0444)>0)
-	gtk_rc_add_default_file (rc_path),has_rc = TRUE;
-      else
-	gtk_rc_add_default_file ("/usr/share/themes/Mist/gtk-2.0/gtkrc" );
-      free(rc_path);
-    }
-  gtk_set_locale ();
+// pas utile pour GTK3  
+//  if(open(rc_path, O_RDONLY, 0444)>0)
+//    gtk_rc_add_default_file (rc_path),has_rc = TRUE;
+//  else
+//    {
+//      rc_path = malloc(strlen(DATADIR) +strlen("gtkrc") + 2);
+//      sprintf(rc_path,"%s%s",DATADIR,"gtkrc");
+//      if(open(rc_path, O_RDONLY, 0444)>0)
+//	gtk_rc_add_default_file (rc_path),has_rc = TRUE;
+//      else
+//	gtk_rc_add_default_file ("/usr/share/themes/Mist/gtk-2.0/gtkrc" );
+//      free(rc_path);
+//    }
+  setlocale (LC_ALL, "");
 
 
   gtk_init (&argc, &argv);
