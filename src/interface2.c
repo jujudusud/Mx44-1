@@ -1917,7 +1917,7 @@ GtkWidget* create_window (int has_rc)
 	ed.temperament[t] = gtk_radio_button_new ((void*)t_group);
 	//RG
 	t_group = (void*)
-	  gtk_radio_button_set_group (GTK_RADIO_BUTTON (ed.temperament[0]), GSList t_group);
+	  gtk_radio_button_get_group (GTK_RADIO_BUTTON (ed.temperament[0]));
 	g_object_ref (ed.temperament[t]);
 	g_object_set_data_full (G_OBJECT (window1), "temperament",
 				  ed.temperament[t],
