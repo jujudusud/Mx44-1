@@ -1192,7 +1192,7 @@ GtkWidget* create_window (int has_rc)
   char *name = name_n();
 
   gtk_container_set_border_width (GTK_CONTAINER (ed.window), 1);
-  gtk_window_set_title (GTK_WINDOW (ed.window), "Mx44.2");
+  gtk_window_set_title (GTK_WINDOW (ed.window), "Mx44 version 2");
   
   g_signal_connect (ed.window, "destroy",
 		    G_CALLBACK(gtk_main_quit),NULL);
