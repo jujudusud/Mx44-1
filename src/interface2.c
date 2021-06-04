@@ -44,9 +44,7 @@
 #define DIST 9
 #define LFO 10
 
-#define CSZ 15 // cell size
-//static char * widget_theme = "/usr/share/themes/Ia Ora One/gtk-2.0/gtkrc"; plus valable à supprimer
-
+#define CSZ 15 /* cell size */
 
 extern Mx44state *      mx44;
 
@@ -181,8 +179,8 @@ static struct mx44patch_edit
   //GtkWidget  *
   //GtkWidget  *
   //GtkWidget  *
-  //  GtkWidget *spinbutton[4];
-  // GtkWidget *spinlabel[4];
+  //GtkWidget  *spinbutton[4];
+  //GtkWidget  *spinlabel[4];
 
 
   GtkWidget *common_spinbutton;
