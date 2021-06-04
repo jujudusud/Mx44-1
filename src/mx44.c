@@ -199,7 +199,7 @@ mx44_jack_shutdown (void *arg)
 static int
 mx44_jack_init(Mx44state *mx44)
 {
-  const char *client_name = "Mx44.2";
+  const char *client_name = "mx44";
 
 
   if (snd_seq_open(&mx44->seq_handle, "default", SND_SEQ_OPEN_INPUT, 0) < 0)

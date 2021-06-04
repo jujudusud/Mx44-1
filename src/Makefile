@@ -4,10 +4,10 @@ TARGET		= mx44
 
 PREFIX		= /usr/local/
 
-DATADIR		= $(PREFIX)share/Mx44/
+DATADIR		= $(PREFIX)share/mx44/
 BINDIR		= $(PREFIX)bin/
 
-DIR		= Mx44.2
+DIR		= mx44
 
 CC		= gcc
 
